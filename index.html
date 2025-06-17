@@ -13,6 +13,13 @@
   <input type="file" id="csvFileInput" accept=".csv">
   <button onclick="cargarCSV()">Subir a Supabase</button>
 
+  <h3>Filtrar datos</h3>
+  <label>CLUES: <input type="text" id="filtroClues" placeholder="Ej. CL001"></label>
+  <label>Mes: <input type="number" id="filtroMes" min="1" max="12"></label>
+  <label>Año: <input type="number" id="filtroAxo" min="2000" max="2100"></label>
+  <button onclick="filtrarDatos()">Aplicar filtros</button>
+  <button onclick="mostrarDatos()">Limpiar filtros</button>
+
   <h3>Datos cargados</h3>
   <table id="tablaDatos">
     <thead>
@@ -27,13 +34,5 @@
     </thead>
     <tbody></tbody>
   </table>
- <h3>Filtrar datos</h3>
-<label>CLUES: <input type="text" id="filtroClues" placeholder="Ej. CL001"></label>
-<label>Mes: <input type="number" id="filtroMes" min="1" max="12"></label>
-<label>Año: <input type="number" id="filtroAxo" min="2000" max="2100"></label>
-<button onclick="filtrarDatos()">Aplicar filtros</button>
-<button onclick="mostrarDatos()">Limpiar filtros</button>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="js/app.js"></script>
-</body>
-</html>
+
+  <script src="https://cdn.jsdeliv
