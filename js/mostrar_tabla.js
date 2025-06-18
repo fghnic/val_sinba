@@ -23,7 +23,8 @@ async function cargarDatos() {
   }
 
   const headers = Object.keys(data[0])
-  let tabla = '<table><thead><tr>'
+  let tabla = '<table class="table table-bordered table-striped table-hover"><thead class="table-primary"><tr>'
+
   headers.forEach(h => tabla += `<th>${h}</th>`)
   tabla += '</tr></thead><tbody>'
 
