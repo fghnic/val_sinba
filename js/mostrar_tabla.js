@@ -10,30 +10,48 @@ const selectClues = document.getElementById("clues-select");
 async function mostrarTabla(clues = "") {
   tablaContainer.innerHTML = `<div class="alert alert-info">Cargando datos...</div>`;
 
-  let query = supabase
+  // Obtener todos los registros de tbl_generales
+  const { data: generales, error: errorGenerales } = await supabase
     .from("tbl_generales")
-    .select("var, tbl_indice(apartado, descripcion_plat)")
-    .order("var");
+    .select("var, clues")
+    .order("var", { ascending: true });
 
-  if (clues) {
-    query = query.eq("clues", clues);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    tablaContainer.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+  if (errorGenerales) {
+    tablaContainer.innerHTML = `<div class="alert alert-danger">Error al obtener tbl_generales: ${errorGenerales.message}</div>`;
     return;
   }
 
-  if (!data || data.length === 0) {
-    tablaContainer.innerHTML = `<div class="alert alert-warning">No se encontraron registros.</div>`;
+  // Si se aplica filtro por clues
+  const filtrados = clues ? generales.filter(row => row.clues === clues) : generales;
+
+  // Obtener todos los registros de tbl_indice
+  const { data: indice, error: errorIndice } = await supabase
+    .from("tbl_indice")
+    .select("id_var, apartado, desc_plat");
+
+  if (errorIndice) {
+    tablaContainer.innerHTML = `<div class="alert alert-danger">Error al obtener tbl_indice: ${errorIndice.message}</div>`;
     return;
   }
 
-  // Construir tabla con columnas personalizadas
-  let tabla = `
-    <table class="table table-bordered table-striped table-hover">
+  // Unir datos manualmente
+  const datosCombinados = filtrados.map(gen => {
+    const relacion = indice.find(ind => ind.id_var === gen.var);
+    return {
+      var: gen.var,
+      apartado: relacion?.apartado || "",
+      desc_plat: relacion?.desc_plat || ""
+    };
+  });
+
+  if (datosCombinados.length === 0) {
+    tablaContainer.innerHTML = `<div class="alert alert-warning">No se encontraron datos con esos criterios.</div>`;
+    return;
+  }
+
+  // Generar HTML de tabla
+  let tablaHTML = `
+    <table class="table table-bordered table-striped">
       <thead class="table-primary">
         <tr>
           <th>Variable</th>
@@ -44,28 +62,28 @@ async function mostrarTabla(clues = "") {
       <tbody>
   `;
 
-  data.forEach(row => {
-    tabla += `
+  datosCombinados.forEach(row => {
+    tablaHTML += `
       <tr>
-        <td>${row.var ?? ''}</td>
-        <td>${row.tbl_indice?.apartado ?? ''}</td>
-        <td>${row.tbl_indice?.descripcion_plat ?? ''}</td>
+        <td>${row.var}</td>
+        <td>${row.apartado}</td>
+        <td>${row.desc_plat}</td>
       </tr>
     `;
   });
 
-  tabla += `
+  tablaHTML += `
       </tbody>
     </table>
   `;
 
-  tablaContainer.innerHTML = tabla;
+  tablaContainer.innerHTML = tablaHTML;
 }
 
 // Mostrar todos al inicio
 mostrarTabla();
 
-// Activar filtro por CLUES después de la carga de CSV
+// Filtrar por clues después de subir
 selectClues.addEventListener("change", () => {
   const seleccion = selectClues.value;
   mostrarTabla(seleccion);
