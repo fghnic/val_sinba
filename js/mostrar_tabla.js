@@ -7,51 +7,66 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const tablaContainer = document.getElementById("tabla-container");
 const selectClues = document.getElementById("clues-select");
 
-// Función para mostrar tabla filtrada (o completa)
 async function mostrarTabla(clues = "") {
   tablaContainer.innerHTML = `<div class="alert alert-info">Cargando datos...</div>`;
 
-  const query = supabase.from("tbl_generales").select("*");
+  let query = supabase
+    .from("tbl_generales")
+    .select("var, tbl_indice(apartado, descripcion_plat)")
+    .order("var");
 
   if (clues) {
-    query.eq("clues", clues);
+    query = query.eq("clues", clues);
   }
 
   const { data, error } = await query;
 
   if (error) {
-    tablaContainer.innerHTML = `<div class="alert alert-danger">Error al cargar datos: ${error.message}</div>`;
+    tablaContainer.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
     return;
   }
 
-  if (data.length === 0) {
-    tablaContainer.innerHTML = `<div class="alert alert-warning">No se encontraron registros para esta CLUES.</div>`;
+  if (!data || data.length === 0) {
+    tablaContainer.innerHTML = `<div class="alert alert-warning">No se encontraron registros.</div>`;
     return;
   }
 
-  let tabla = '<table class="table table-striped table-hover table-bordered"><thead class="table-primary"><tr>';
-  Object.keys(data[0]).forEach(col => {
-    tabla += `<th>${col}</th>`;
+  // Construir tabla con columnas personalizadas
+  let tabla = `
+    <table class="table table-bordered table-striped table-hover">
+      <thead class="table-primary">
+        <tr>
+          <th>Variable</th>
+          <th>Apartado</th>
+          <th>Descripción</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  data.forEach(row => {
+    tabla += `
+      <tr>
+        <td>${row.var ?? ''}</td>
+        <td>${row.tbl_indice?.apartado ?? ''}</td>
+        <td>${row.tbl_indice?.descripcion_plat ?? ''}</td>
+      </tr>
+    `;
   });
-  tabla += '</tr></thead><tbody>';
-  data.forEach(fila => {
-    tabla += '<tr>';
-    Object.values(fila).forEach(valor => {
-      tabla += `<td>${valor ?? ''}</td>`;
-    });
-    tabla += '</tr>';
-  });
-  tabla += '</tbody></table>';
+
+  tabla += `
+      </tbody>
+    </table>
+  `;
 
   tablaContainer.innerHTML = tabla;
 }
 
-// Mostrar todo al cargar
+// Mostrar todos al inicio
 mostrarTabla();
 
-// Evento para filtrar por CLUES
+// Activar filtro por CLUES después de la carga de CSV
 selectClues.addEventListener("change", () => {
   const seleccion = selectClues.value;
   mostrarTabla(seleccion);
 });
-
