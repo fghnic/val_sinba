@@ -1,41 +1,57 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-const SUPABASE_URL = 'https://ucpujkiheaxclghkkyvn.supabase.co'
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjcHVqa2loZWF4Y2xnaGtreXZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3MDMzOTEsImV4cCI6MjA2NTI3OTM5MX0.FGb-g6NBz4wVp6Voh1JYSAmbzPYGIJXqT608-LC3FFA'
+const supabaseUrl = "https://ucpujkiheaxclghkkyvn.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjcHVqa2loZWF4Y2xnaGtreXZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3MDMzOTEsImV4cCI6MjA2NTI3OTM5MX0.FGb-g6NBz4wVp6Voh1JYSAmbzPYGIJXqT608-LC3FFA";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+const tablaContainer = document.getElementById("tabla-container");
+const selectClues = document.getElementById("clues-select");
 
-async function cargarDatos() {
-  const { data, error } = await supabase
-    .from('tbl_generales')
-    .select('*')
+// Función para mostrar tabla filtrada (o completa)
+async function mostrarTabla(clues = "") {
+  tablaContainer.innerHTML = `<div class="alert alert-info">Cargando datos...</div>`;
 
-  const contenedor = document.getElementById('tabla-container')
+  const query = supabase.from("tbl_generales").select("*");
+
+  if (clues) {
+    query.eq("clues", clues);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
-    contenedor.innerHTML = `<p style="color: red;">Error al cargar datos: ${error.message}</p>`
-    return
+    tablaContainer.innerHTML = `<div class="alert alert-danger">Error al cargar datos: ${error.message}</div>`;
+    return;
   }
 
-  if (!data || data.length === 0) {
-    contenedor.innerHTML = '<p>No hay registros disponibles.</p>'
-    return
+  if (data.length === 0) {
+    tablaContainer.innerHTML = `<div class="alert alert-warning">No se encontraron registros para esta CLUES.</div>`;
+    return;
   }
 
-  const headers = Object.keys(data[0])
-  let tabla = '<table class="table table-bordered table-striped table-hover"><thead class="table-primary"><tr>'
-
-  headers.forEach(h => tabla += `<th>${h}</th>`)
-  tabla += '</tr></thead><tbody>'
-
+  let tabla = '<table class="table table-striped table-hover table-bordered"><thead class="table-primary"><tr>';
+  Object.keys(data[0]).forEach(col => {
+    tabla += `<th>${col}</th>`;
+  });
+  tabla += '</tr></thead><tbody>';
   data.forEach(fila => {
-    tabla += '<tr>'
-    headers.forEach(h => tabla += `<td>${fila[h] ?? ''}</td>`)
-    tabla += '</tr>'
-  })
+    tabla += '<tr>';
+    Object.values(fila).forEach(valor => {
+      tabla += `<td>${valor ?? ''}</td>`;
+    });
+    tabla += '</tr>';
+  });
+  tabla += '</tbody></table>';
 
-  tabla += '</tbody></table>'
-  contenedor.innerHTML = tabla
+  tablaContainer.innerHTML = tabla;
 }
 
-cargarDatos()
+// Mostrar todo al cargar
+mostrarTabla();
+
+// Evento para filtrar por CLUES
+selectClues.addEventListener("change", () => {
+  const seleccion = selectClues.value;
+  mostrarTabla(seleccion);
+});
+
