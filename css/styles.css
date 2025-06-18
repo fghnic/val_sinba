@@ -1,18 +1,29 @@
 body {
   font-family: Arial, sans-serif;
-  margin: 20px;
-}
-
-form {
-  max-width: 600px;
+  background: #f0f2f5;
   padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
 }
 
-input, select {
-  display: block;
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+table {
+  border-collapse: collapse;
   width: 100%;
-  margin: 10px 0;
-  padding: 8px;
+  background-color: white;
+  margin-top: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  background-color: #007bff;
+  color: white;
 }

@@ -3,73 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <title>Tabla: tbl_generales - val_sinba</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
-    h1 { text-align: center; color: #333; }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background-color: white;
-      margin-top: 20px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: left;
-    }
-    th {
-      background-color: #007bff;
-      color: white;
-    }
-  </style>
+  <link rel="stylesheet" href="css/estilos.css" />
 </head>
 <body>
   <h1>Datos: tbl_generales</h1>
   <div id="tabla-container">Cargando datos...</div>
 
-  <script type="module">
-    import { createClient } from 'https://esm.sh/@supabase/supabase-js'
-
-    const SUPABASE_URL = 'https://ucpujkiheaxclghkkyvn.supabase.co'
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjcHVqa2loZWF4Y2xnaGtreXZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3MDMzOTEsImV4cCI6MjA2NTI3OTM5MX0.FGb-g6NBz4wVp6Voh1JYSAmbzPYGIJXqT608-LC3FFA'
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
-
-    async function cargarDatos() {
-      const { data, error } = await supabase
-        .from('tbl_generales')
-        .select('*')
-
-      const contenedor = document.getElementById('tabla-container')
-
-      if (error) {
-        contenedor.innerHTML = `<p style="color: red;">Error al cargar datos: ${error.message}</p>`
-        return
-      }
-
-      if (!data || data.length === 0) {
-        contenedor.innerHTML = '<p>No hay registros disponibles.</p>'
-        return
-      }
-
-      const headers = Object.keys(data[0])
-      let tabla = '<table><thead><tr>'
-      headers.forEach(h => tabla += `<th>${h}</th>`)
-      tabla += '</tr></thead><tbody>'
-
-      data.forEach(fila => {
-        tabla += '<tr>'
-        headers.forEach(h => tabla += `<td>${fila[h] ?? ''}</td>`)
-        tabla += '</tr>'
-      })
-
-      tabla += '</tbody></table>'
-      contenedor.innerHTML = tabla
-    }
-
-    cargarDatos()
-  </script>
+  <script type="module" src="js/mostrar_tabla.js"></script>
 </body>
 </html>
-
