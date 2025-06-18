@@ -7,84 +7,51 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const tablaContainer = document.getElementById("tabla-container");
 const selectClues = document.getElementById("clues-select");
 
+// Función para mostrar tabla filtrada (o completa)
 async function mostrarTabla(clues = "") {
   tablaContainer.innerHTML = `<div class="alert alert-info">Cargando datos...</div>`;
 
-  // Obtener todos los registros de tbl_generales
-  const { data: generales, error: errorGenerales } = await supabase
-    .from("tbl_generales")
-    .select("var, clues")
-    .order("var", { ascending: true });
+  const query = supabase.from("tbl_generales").select("*");
 
-  if (errorGenerales) {
-    tablaContainer.innerHTML = `<div class="alert alert-danger">Error al obtener tbl_generales: ${errorGenerales.message}</div>`;
+  if (clues) {
+    query.eq("clues", clues);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    tablaContainer.innerHTML = `<div class="alert alert-danger">Error al cargar datos: ${error.message}</div>`;
     return;
   }
 
-  // Si se aplica filtro por clues
-  const filtrados = clues ? generales.filter(row => row.clues === clues) : generales;
-
-  // Obtener todos los registros de tbl_indice
-  const { data: indice, error: errorIndice } = await supabase
-    .from("tbl_indice")
-    .select("id_var, apartado, desc_plat");
-
-  if (errorIndice) {
-    tablaContainer.innerHTML = `<div class="alert alert-danger">Error al obtener tbl_indice: ${errorIndice.message}</div>`;
+  if (data.length === 0) {
+    tablaContainer.innerHTML = `<div class="alert alert-warning">No se encontraron registros para esta CLUES.</div>`;
     return;
   }
 
-  // Unir datos manualmente
-  const datosCombinados = filtrados.map(gen => {
-    const relacion = indice.find(ind => ind.id_var === gen.var);
-    return {
-      var: gen.var,
-      apartado: relacion?.apartado || "",
-      desc_plat: relacion?.desc_plat || ""
-    };
+  let tabla = '<table class="table table-striped table-hover table-bordered"><thead class="table-primary"><tr>';
+  Object.keys(data[0]).forEach(col => {
+    tabla += `<th>${col}</th>`;
   });
-
-  if (datosCombinados.length === 0) {
-    tablaContainer.innerHTML = `<div class="alert alert-warning">No se encontraron datos con esos criterios.</div>`;
-    return;
-  }
-
-  // Generar HTML de tabla
-  let tablaHTML = `
-    <table class="table table-bordered table-striped">
-      <thead class="table-primary">
-        <tr>
-          <th>Variable</th>
-          <th>Apartado</th>
-          <th>Descripción</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-
-  datosCombinados.forEach(row => {
-    tablaHTML += `
-      <tr>
-        <td>${row.var}</td>
-        <td>${row.apartado}</td>
-        <td>${row.desc_plat}</td>
-      </tr>
-    `;
+  tabla += '</tr></thead><tbody>';
+  data.forEach(fila => {
+    tabla += '<tr>';
+    Object.values(fila).forEach(valor => {
+      tabla += `<td>${valor ?? ''}</td>`;
+    });
+    tabla += '</tr>';
   });
+  tabla += '</tbody></table>';
 
-  tablaHTML += `
-      </tbody>
-    </table>
-  `;
-
-  tablaContainer.innerHTML = tablaHTML;
+  tablaContainer.innerHTML = tabla;
 }
 
-// Mostrar todos al inicio
+// Mostrar todo al cargar
 mostrarTabla();
 
-// Filtrar por clues después de subir
+// Evento para filtrar por CLUES
 selectClues.addEventListener("change", () => {
   const seleccion = selectClues.value;
   mostrarTabla(seleccion);
 });
+
