@@ -26,9 +26,9 @@ async function mostrarTabla(clues = "") {
       cant,
       tbl_indice:var (
         desc_plat,
-        secc, // Added new column: Sección
-        apartado,   // Added new column: Apartado
-        origen      // Added new column: Origen
+        secc, 
+        apartado,
+        origen
       )
     `);
 
@@ -76,7 +76,7 @@ async function mostrarTabla(clues = "") {
         <td class="p-3">${row.var || '—'}</td>
         <td class="p-3">${row.tbl_indice?.desc_plat || '—'}</td>
         <td class="p-3">${row.cant || '—'}</td>
-        <td class="p-3">${row.tbl_indice?.seccionles || '—'}</td> <!-- Display data for seccionles -->
+        <td class="p-3">${row.tbl_indice?.secc || '—'}</td> <!-- Display data for seccionles -->
         <td class="p-3">${row.tbl_indice?.apartado || '—'}</td>   <!-- Display data for apartado -->
         <td class="p-3">${row.tbl_indice?.origen || '—'}</td>      <!-- Display data for origen -->
       </tr>
