@@ -7,14 +7,21 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const tablaContainer = document.getElementById("tabla-container");
 const selectClues = document.getElementById("clues-select");
 
-// Función para mostrar tabla filtrada (o completa)
 async function mostrarTabla(clues = "") {
   tablaContainer.innerHTML = `<div class="alert alert-info">Cargando datos...</div>`;
 
-  const query = supabase.from("tbl_generales").select("*");
+  let query = supabase
+    .from("tbl_generales")
+    .select(`
+      var,
+      cant,
+      tbl_indice:var (
+        desc_plat
+      )
+    `);
 
   if (clues) {
-    query.eq("clues", clues);
+    query = query.eq("clues", clues);
   }
 
   const { data, error } = await query;
@@ -24,25 +31,35 @@ async function mostrarTabla(clues = "") {
     return;
   }
 
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     tablaContainer.innerHTML = `<div class="alert alert-warning">No se encontraron registros para esta CLUES.</div>`;
     return;
   }
 
-  let tabla = '<table class="table table-striped table-hover table-bordered"><thead class="table-primary"><tr>';
-  Object.keys(data[0]).forEach(col => {
-    tabla += `<th>${col}</th>`;
-  });
-  tabla += '</tr></thead><tbody>';
-  data.forEach(fila => {
-    tabla += '<tr>';
-    Object.values(fila).forEach(valor => {
-      tabla += `<td>${valor ?? ''}</td>`;
-    });
-    tabla += '</tr>';
-  });
-  tabla += '</tbody></table>';
+  // Construir tabla HTML solo con columnas: var, desc_plat, cant
+  let tabla = `
+    <table class="table table-striped table-hover table-bordered">
+      <thead class="table-primary">
+        <tr>
+          <th>Variable</th>
+          <th>Descripción</th>
+          <th>Cantidad</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
 
+  data.forEach(row => {
+    tabla += `
+      <tr>
+        <td>${row.var}</td>
+        <td>${row.tbl_indice?.desc_plat || '—'}</td>
+        <td>${row.cant}</td>
+      </tr>
+    `;
+  });
+
+  tabla += '</tbody></table>';
   tablaContainer.innerHTML = tabla;
 }
 
@@ -54,4 +71,3 @@ selectClues.addEventListener("change", () => {
   const seleccion = selectClues.value;
   mostrarTabla(seleccion);
 });
-
