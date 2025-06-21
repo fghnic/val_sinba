@@ -61,9 +61,9 @@ async function mostrarTabla(clues = "") {
           <th class="p-3 text-left">Variable</th>
           <th class="p-3 text-left">Descripción</th>
           <th class="p-3 text-left">Cantidad</th>
-          <th class="p-3 text-left">Sección</th>    <!-- Encabezado de tabla para seccionles -->
-          <th class="p-3 text-left">Apartado</th>   <!-- Encabezado de tabla para apartado -->
-          <th class="p-3 text-left">Origen</th>     <!-- Encabezado de tabla para origen -->
+          <th class="p-3 text-left">Sección</th>    
+          <th class="p-3 text-left">Apartado</th>   
+          <th class="p-3 text-left">Origen</th>    
         </tr>
       </thead>
       <tbody>
@@ -95,3 +95,6 @@ selectClues.addEventListener("change", () => {
   const seleccion = selectClues.value; // Obtiene el valor CLUES seleccionado
   mostrarTabla(seleccion); // Llama a mostrarTabla con el CLUES seleccionado
 });
+
+// Exponer la función al ámbito global para que otros módulos puedan llamarla
+window.mostrarTabla = mostrarTabla;

@@ -36,6 +36,14 @@ document.getElementById("csv-form").addEventListener("submit", async (event) => 
 
     if (errores === 0) {
       statusDiv.textContent = "Archivo cargado correctamente.";
+
+      // ✅ Actualiza la tabla después de la carga
+      if (typeof window.mostrarTabla === "function") {
+        window.mostrarTabla(); // sin filtro
+      } else {
+        console.warn("No se pudo actualizar la tabla: mostrarTabla() no está definida.");
+      }
+
     } else {
       statusDiv.textContent = `Carga terminada con ${errores} error(es).`;
     }
@@ -43,3 +51,4 @@ document.getElementById("csv-form").addEventListener("submit", async (event) => 
 
   reader.readAsText(file);
 });
+
