@@ -1,29 +1,143 @@
-body {
-  font-family: Arial, sans-serif;
-  background: #f0f2f5;
-  padding: 20px;
+/* Paleta de colores institucional CDMX */
+:root {
+  --cdmx-guinda: #801335;
+  --cdmx-dorado: #bc955c;
+  --cdmx-verde: #006341;
+  --cdmx-gris: #444;
+  --cdmx-rosa: #e20074;
+  --cdmx-aqua: #00b2a9;
+  --cdmx-naranja: #e87722;
+  --cdmx-azul: #0072ce;
+  --cdmx-lima: #78be20;
 }
 
-h1 {
-  text-align: center;
+body {
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f8f9fa;
   color: #333;
 }
 
-table {
-  border-collapse: collapse;
-  width: 100%;
-  background-color: white;
-  margin-top: 20px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+h1 {
+  color: var(--cdmx-guinda);
+  font-weight: bold;
+  margin-bottom: 1rem;
 }
 
-th, td {
-  border: 1px solid #ccc;
-  padding: 10px;
-  text-align: left;
+/* Encabezado principal con línea inferior */
+.encabezado-cdmx {
+  border-bottom: 3px solid var(--cdmx-guinda);
+  padding-bottom: 0.5rem;
+  margin-bottom: 2rem;
 }
 
-th {
-  background-color: #007bff;
+/* Subtítulos con línea lateral dorada */
+.seccion-cdmx {
+  border-left: 5px solid var(--cdmx-dorado);
+  padding-left: 0.75rem;
+  margin-top: 2rem;
+  color: var(--cdmx-gris);
+  font-weight: 600;
+}
+
+/* Etiquetas */
+.label-dorado {
+  color: var(--cdmx-dorado);
+  font-weight: bold;
+}
+
+/* Botones */
+.btn-primary,
+.btn-outline-secondary {
+  background-color: var(--cdmx-gris);
+  border-color: var(--cdmx-gris);
   color: white;
+}
+
+.btn-outline-secondary {
+  background-color: transparent;
+  color: var(--cdmx-gris);
+}
+
+.btn-primary:hover,
+.btn-outline-secondary:hover {
+  background-color: var(--cdmx-dorado);
+  border-color: var(--cdmx-dorado);
+  color: white;
+}
+
+/* Tabla DataTables */
+table.dataTable thead th {
+  background-color: var(--cdmx-dorado) !important;
+  color: white;
+  border-bottom: 2px solid var(--cdmx-guinda);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  color: var(--cdmx-gris) !important;
+  background-color: white !important;
+  border: 1px solid var(--cdmx-gris) !important;
+  border-radius: 0.25rem !important;
+  margin: 0 3px !important;
+  padding: 0.4rem 0.7rem !important;
+  font-weight: 500 !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+  background-color: var(--cdmx-lima) !important;
+  color: white !important;
+  border-color: var(--cdmx-lima) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+  background-color: var(--cdmx-guinda) !important;
+  color: white !important;
+  border-color: var(--cdmx-guinda) !important;
+  font-weight: bold !important;
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Archivo input */
+#csv-file {
+  max-width: 300px;
+}
+
+/* Responsive filtros */
+@media (max-width: 576px) {
+  .d-flex.flex-wrap.gap-3 {
+    flex-direction: column;
+  }
+
+  #csv-form .row {
+    flex-direction: column;
+  }
+
+  #csv-form .col-auto {
+    width: 100%;
+  }
+}
+
+/* Estilo personalizado de paginación CDMX para DataTables */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  background-color: white !important;
+  border: 1px solid var(--cdmx-gris) !important;
+  color: var(--cdmx-gris) !important;
+  margin: 0 3px !important;
+  padding: 0.4rem 0.7rem !important;
+  border-radius: 0.25rem !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+  background-color: var(--cdmx-lima) !important;
+  color: white !important;
+  border-color: var(--cdmx-lima) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+  background-color: var(--cdmx-guinda) !important;
+  color: white !important;
+  border-color: var(--cdmx-guinda) !important;
+  font-weight: bold !important;
 }
