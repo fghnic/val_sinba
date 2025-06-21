@@ -1,7 +1,6 @@
-// mostrar_tabla.js
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-// Configura tu cliente Supabase
+// Supabase config
 const supabase = createClient(
   "https://ucpujkiheaxclghkkyvn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjcHVqa2loZWF4Y2xnaGtreXZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3MDMzOTEsImV4cCI6MjA2NTI3OTM5MX0.FGb-g6NBz4wVp6Voh1JYSAmbzPYGIJXqT608-LC3FFA"
@@ -13,66 +12,61 @@ const selectClues = document.getElementById("clues-select");
 const selectSecc = document.getElementById("secc-select");
 const btnLimpiar = document.getElementById("limpiar-filtros");
 
-let tablaRef = null;
+// Cargar CLUES dinámicamente
+async function cargarClues() {
+  const { data, error } = await supabase.from("tbl_clues").select("clues, nombre").order("clues");
 
-async function mostrarTabla(filtroClues = "", filtroSecc = "") {
+  if (error) return console.error("Error CLUES:", error.message);
+
+  selectClues.innerHTML = `<option value="">-- Mostrar todos --</option>` +
+    data.map(d => `<option value="${d.clues}">${d.clues} - ${d.nombre}</option>`).join("");
+}
+
+// Cargar secciones dinámicamente
+async function cargarSecciones() {
+  const { data, error } = await supabase.from("tbl_indice").select("secc").order("secc");
+
+  if (error) return console.error("Error secciones:", error.message);
+
+  const únicas = [...new Set(data.map(d => d.secc).filter(Boolean))];
+  selectSecc.innerHTML = `<option value="">-- Mostrar todos --</option>` +
+    únicas.map(secc => `<option value="${secc}">${secc}</option>`).join("");
+}
+
+// Mostrar datos con filtros
+async function mostrarTabla() {
+  const clues = selectClues.value;
+  const secc = selectSecc.value;
+
   tablaContainer.innerHTML = `<div class="alert alert-info">Cargando datos...</div>`;
 
   let query = supabase.from("tbl_generales").select(`
-    clues,
-    var,
-    cant,
+    var, cant,
     tbl_indice:var (
-      desc_plat,
-      secc,
-      apartado,
-      origen
+      desc_plat, secc, apartado, origen
     )
   `);
 
-  if (filtroClues) query = query.eq("clues", filtroClues);
-  if (filtroSecc) query = query.eq("tbl_indice.secc", filtroSecc);
+  if (clues) query = query.eq("clues", clues);
+  if (secc) query = query.eq("tbl_indice.secc", secc);
 
   const { data, error } = await query;
 
   if (error) {
-    tablaContainer.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+    tablaContainer.innerHTML = `<div class="alert alert-danger">Error al cargar datos: ${error.message}</div>`;
     return;
   }
 
-  if (!data || data.length === 0) {
-    tablaContainer.innerHTML = `<div class="alert alert-warning">No se encontraron datos.</div>`;
+  if (!data.length) {
+    tablaContainer.innerHTML = `<div class="alert alert-warning">No se encontraron registros.</div>`;
     return;
   }
 
-  // Obtener valores únicos para los filtros dinámicos
-  const secciones = [...new Set(data.map(row => row.tbl_indice?.secc).filter(Boolean))];
-  const cluesUnicos = [...new Set(data.map(row => row.clues))];
-
-  // Cargar dinámicamente los selectores si están vacíos
-  if (selectSecc.children.length <= 1) {
-    secciones.forEach(secc => {
-      const option = document.createElement("option");
-      option.value = secc;
-      option.textContent = secc;
-      selectSecc.appendChild(option);
-    });
-  }
-
-  if (selectClues.children.length <= 1) {
-    cluesUnicos.forEach(clues => {
-      const option = document.createElement("option");
-      option.value = clues;
-      option.textContent = clues;
-      selectClues.appendChild(option);
-    });
-  }
-
-  let tablaHTML = `
-    <table id="mi-tabla" class="table table-striped table-bordered table-hover rounded-2 w-100">
+  // Construir tabla
+  const tablaHTML = `
+    <table id="tabla-supabase" class="table table-striped">
       <thead>
         <tr>
-          <th>CLUES</th>
           <th>Variable</th>
           <th>Descripción</th>
           <th>Cantidad</th>
@@ -82,53 +76,44 @@ async function mostrarTabla(filtroClues = "", filtroSecc = "") {
         </tr>
       </thead>
       <tbody>
+        ${data.map(r => `
+          <tr>
+            <td>${r.var || '—'}</td>
+            <td>${r.tbl_indice?.desc_plat || '—'}</td>
+            <td>${r.cant || '—'}</td>
+            <td>${r.tbl_indice?.secc || '—'}</td>
+            <td>${r.tbl_indice?.apartado || '—'}</td>
+            <td>${r.tbl_indice?.origen || '—'}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
   `;
 
-  data.forEach(row => {
-    tablaHTML += `
-      <tr>
-        <td>${row.clues || "—"}</td>
-        <td>${row.var || "—"}</td>
-        <td>${row.tbl_indice?.desc_plat || "—"}</td>
-        <td>${row.cant || "—"}</td>
-        <td>${row.tbl_indice?.secc || "—"}</td>
-        <td>${row.tbl_indice?.apartado || "—"}</td>
-        <td>${row.tbl_indice?.origen || "—"}</td>
-      </tr>
-    `;
-  });
-
-  tablaHTML += `</tbody></table>`;
   tablaContainer.innerHTML = tablaHTML;
 
-  if (tablaRef) {
-    tablaRef.destroy();
-  }
-  tablaRef = new DataTable("#mi-tabla", {
-    language: {
-      url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json"
-    },
-    pageLength: 10,
-    lengthChange: true,
-    ordering: true,
-    responsive: true
-  });
+  // Activar DataTable
+  setTimeout(() => {
+    $('#tabla-supabase').DataTable({
+      pageLength: 10,
+      lengthChange: false,
+      language: {
+        url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json"
+      }
+    });
+  }, 100);
 }
 
-// Eventos de filtros
-selectClues.addEventListener("change", () => {
-  mostrarTabla(selectClues.value, selectSecc.value);
-});
-
-selectSecc.addEventListener("change", () => {
-  mostrarTabla(selectClues.value, selectSecc.value);
-});
-
+// Eventos
+selectClues.addEventListener("change", mostrarTabla);
+selectSecc.addEventListener("change", mostrarTabla);
 btnLimpiar.addEventListener("click", () => {
   selectClues.value = "";
   selectSecc.value = "";
   mostrarTabla();
 });
 
-// Cargar tabla al iniciar
+// Inicializar
+cargarClues();
+cargarSecciones();
 mostrarTabla();
