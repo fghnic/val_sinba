@@ -1,97 +1,134 @@
+// mostrar_tabla.js
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-// Inicializa el cliente Supabase con tu URL y clave pública
-const supabaseUrl = "https://ucpujkiheaxclghkkyvn.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjcHVqa2loZWF4Y2xnaGtreXZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3MDMzOTEsImV4cCI6MjA2NTI3OTM5MX0.FGb-g6NBz4wVp6Voh1JYSAmbzPYGIJXqT608-LC3FFA";
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Configura tu cliente Supabase
+const supabase = createClient(
+  "https://ucpujkiheaxclghkkyvn.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjcHVqa2loZWF4Y2xnaGtreXZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3MDMzOTEsImV4cCI6MjA2NTI3OTM5MX0.FGb-g6NBz4wVp6Voh1JYSAmbzPYGIJXqT608-LC3FFA"
+);
 
-// Obtiene referencias a los elementos HTML
+// Referencias DOM
 const tablaContainer = document.getElementById("tabla-container");
 const selectClues = document.getElementById("clues-select");
+const selectSecc = document.getElementById("secc-select");
+const btnLimpiar = document.getElementById("limpiar-filtros");
 
-/**
- * Muestra una tabla de datos obtenidos de Supabase, opcionalmente filtrados por CLUES.
- * @param {string} clues - El valor de CLUES para filtrar. Si está vacío, se muestran todos los datos.
- */
-async function mostrarTabla(clues = "") {
-  // Muestra un mensaje de carga mientras se obtienen los datos
-  tablaContainer.innerHTML = <div class="alert alert-info">Cargando datos...</div>;
+let tablaRef = null;
 
-  // Construye la consulta de Supabase.
-  // Seleccionamos 'var', 'cant', y unimos con 'tbl_indice' para obtener 'desc_plat', 'seccionles', 'apartado' y 'origen'.
-  let query = supabase
-    .from("tbl_generales")
-    .select(
-      var,
-      cant,
-      tbl_indice:var (
-        desc_plat,
-        secc,
-        apartado,
-        origen
-      )
-    );
+async function mostrarTabla(filtroClues = "", filtroSecc = "") {
+  tablaContainer.innerHTML = `<div class="alert alert-info">Cargando datos...</div>`;
 
-  // Aplica el filtro CLUES si se proporciona
-  if (clues) {
-    query = query.eq("clues", clues);
-  }
+  let query = supabase.from("tbl_generales").select(`
+    clues,
+    var,
+    cant,
+    tbl_indice:var (
+      desc_plat,
+      secc,
+      apartado,
+      origen
+    )
+  `);
 
-  // Ejecuta la consulta
+  if (filtroClues) query = query.eq("clues", filtroClues);
+  if (filtroSecc) query = query.eq("tbl_indice.secc", filtroSecc);
+
   const { data, error } = await query;
 
-  // Maneja errores durante la obtención de datos
   if (error) {
-    tablaContainer.innerHTML = <div class="alert alert-danger">Error al cargar datos: ${error.message}</div>;
-    console.error("Error al obtener datos:", error.message);
+    tablaContainer.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
     return;
   }
 
-  // Maneja los casos en que no se encuentran datos
   if (!data || data.length === 0) {
-    tablaContainer.innerHTML = <div class="alert alert-warning">No se encontraron registros para esta CLUES.</div>;
+    tablaContainer.innerHTML = `<div class="alert alert-warning">No se encontraron datos.</div>`;
     return;
   }
 
-  // Construye la tabla HTML con las nuevas columnas
-  let tabla = 
-    <table class="table table-striped table-hover table-bordered rounded-lg shadow-lg">
-      <thead class="table-primary bg-blue-600 text-white">
+  // Obtener valores únicos para los filtros dinámicos
+  const secciones = [...new Set(data.map(row => row.tbl_indice?.secc).filter(Boolean))];
+  const cluesUnicos = [...new Set(data.map(row => row.clues))];
+
+  // Cargar dinámicamente los selectores si están vacíos
+  if (selectSecc.children.length <= 1) {
+    secciones.forEach(secc => {
+      const option = document.createElement("option");
+      option.value = secc;
+      option.textContent = secc;
+      selectSecc.appendChild(option);
+    });
+  }
+
+  if (selectClues.children.length <= 1) {
+    cluesUnicos.forEach(clues => {
+      const option = document.createElement("option");
+      option.value = clues;
+      option.textContent = clues;
+      selectClues.appendChild(option);
+    });
+  }
+
+  let tablaHTML = `
+    <table id="mi-tabla" class="table table-striped table-bordered table-hover rounded-2 w-100">
+      <thead>
         <tr>
-          <th class="p-3 text-left">Variable</th>
-          <th class="p-3 text-left">Descripción</th>
-          <th class="p-3 text-left">Cantidad</th>
-          <th class="p-3 text-left">Sección</th>    
-          <th class="p-3 text-left">Apartado</th>   
-          <th class="p-3 text-left">Origen</th>    
+          <th>CLUES</th>
+          <th>Variable</th>
+          <th>Descripción</th>
+          <th>Cantidad</th>
+          <th>Sección</th>
+          <th>Apartado</th>
+          <th>Origen</th>
         </tr>
       </thead>
       <tbody>
-  ;
+  `;
 
-  // Rellena las filas de la tabla con los datos obtenidos
   data.forEach(row => {
-    tabla += 
-      <tr class="hover:bg-blue-50">
-        <td class="p-3">${row.var || '—'}</td>
-        <td class="p-3">${row.tbl_indice?.desc_plat || '—'}</td>
-        <td class="p-3">${row.cant || '—'}</td>
-        <td class="p-3">${row.tbl_indice?.secc || '—'}</td> <!-- Muestra los datos de seccionles -->
-        <td class="p-3">${row.tbl_indice?.apartado || '—'}</td>   <!-- Muestra los datos de apartado -->
-        <td class="p-3">${row.tbl_indice?.origen || '—'}</td>      <!-- Muestra los datos de origen -->
+    tablaHTML += `
+      <tr>
+        <td>${row.clues || "—"}</td>
+        <td>${row.var || "—"}</td>
+        <td>${row.tbl_indice?.desc_plat || "—"}</td>
+        <td>${row.cant || "—"}</td>
+        <td>${row.tbl_indice?.secc || "—"}</td>
+        <td>${row.tbl_indice?.apartado || "—"}</td>
+        <td>${row.tbl_indice?.origen || "—"}</td>
       </tr>
-    ;
+    `;
   });
 
-  tabla += '</tbody></table>';
-  tablaContainer.innerHTML = tabla;
+  tablaHTML += `</tbody></table>`;
+  tablaContainer.innerHTML = tablaHTML;
+
+  if (tablaRef) {
+    tablaRef.destroy();
+  }
+  tablaRef = new DataTable("#mi-tabla", {
+    language: {
+      url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json"
+    },
+    pageLength: 10,
+    lengthChange: true,
+    ordering: true,
+    responsive: true
+  });
 }
 
-// Muestra la tabla con todos los datos cuando la página carga
-mostrarTabla();
-
-// Agrega un escuchador de eventos al menú desplegable de CLUES para filtrar
+// Eventos de filtros
 selectClues.addEventListener("change", () => {
-  const seleccion = selectClues.value; // Obtiene el valor CLUES seleccionado
-  mostrarTabla(seleccion); // Llama a mostrarTabla con el CLUES seleccionado
+  mostrarTabla(selectClues.value, selectSecc.value);
 });
+
+selectSecc.addEventListener("change", () => {
+  mostrarTabla(selectClues.value, selectSecc.value);
+});
+
+btnLimpiar.addEventListener("click", () => {
+  selectClues.value = "";
+  selectSecc.value = "";
+  mostrarTabla();
+});
+
+// Cargar tabla al iniciar
+mostrarTabla();
