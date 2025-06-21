@@ -15,13 +15,13 @@ const selectClues = document.getElementById("clues-select");
  */
 async function mostrarTabla(clues = "") {
   // Muestra un mensaje de carga mientras se obtienen los datos
-  tablaContainer.innerHTML = `<div class="alert alert-info">Cargando datos...</div>`;
+  tablaContainer.innerHTML = <div class="alert alert-info">Cargando datos...</div>;
 
   // Construye la consulta de Supabase.
   // Seleccionamos 'var', 'cant', y unimos con 'tbl_indice' para obtener 'desc_plat', 'seccionles', 'apartado' y 'origen'.
   let query = supabase
     .from("tbl_generales")
-    .select(`
+    .select(
       var,
       cant,
       tbl_indice:var (
@@ -30,7 +30,7 @@ async function mostrarTabla(clues = "") {
         apartado,
         origen
       )
-    `);
+    );
 
   // Aplica el filtro CLUES si se proporciona
   if (clues) {
@@ -42,19 +42,19 @@ async function mostrarTabla(clues = "") {
 
   // Maneja errores durante la obtención de datos
   if (error) {
-    tablaContainer.innerHTML = `<div class="alert alert-danger">Error al cargar datos: ${error.message}</div>`;
+    tablaContainer.innerHTML = <div class="alert alert-danger">Error al cargar datos: ${error.message}</div>;
     console.error("Error al obtener datos:", error.message);
     return;
   }
 
   // Maneja los casos en que no se encuentran datos
   if (!data || data.length === 0) {
-    tablaContainer.innerHTML = `<div class="alert alert-warning">No se encontraron registros para esta CLUES.</div>`;
+    tablaContainer.innerHTML = <div class="alert alert-warning">No se encontraron registros para esta CLUES.</div>;
     return;
   }
 
   // Construye la tabla HTML con las nuevas columnas
-  let tabla = `
+  let tabla = 
     <table class="table table-striped table-hover table-bordered rounded-lg shadow-lg">
       <thead class="table-primary bg-blue-600 text-white">
         <tr>
@@ -67,11 +67,11 @@ async function mostrarTabla(clues = "") {
         </tr>
       </thead>
       <tbody>
-  `;
+  ;
 
   // Rellena las filas de la tabla con los datos obtenidos
   data.forEach(row => {
-    tabla += `
+    tabla += 
       <tr class="hover:bg-blue-50">
         <td class="p-3">${row.var || '—'}</td>
         <td class="p-3">${row.tbl_indice?.desc_plat || '—'}</td>
@@ -80,7 +80,7 @@ async function mostrarTabla(clues = "") {
         <td class="p-3">${row.tbl_indice?.apartado || '—'}</td>   <!-- Muestra los datos de apartado -->
         <td class="p-3">${row.tbl_indice?.origen || '—'}</td>      <!-- Muestra los datos de origen -->
       </tr>
-    `;
+    ;
   });
 
   tabla += '</tbody></table>';
@@ -95,6 +95,3 @@ selectClues.addEventListener("change", () => {
   const seleccion = selectClues.value; // Obtiene el valor CLUES seleccionado
   mostrarTabla(seleccion); // Llama a mostrarTabla con el CLUES seleccionado
 });
-
-// Exponer la función al ámbito global para que otros módulos puedan llamarla
-window.mostrarTabla = mostrarTabla;
