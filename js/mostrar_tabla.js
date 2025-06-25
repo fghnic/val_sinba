@@ -24,7 +24,7 @@ async function cargarDatos() {
       var, cant, clues,
       tbl_clues(clues, nombre),
       tbl_indice(desc_plat, secc, apartado, origen)
-    `);
+    `).range(0, 9999);//Trae hasta 10 000 registros
 
   if (error) {
     tablaContainer.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
@@ -76,10 +76,11 @@ function renderTabla(data) {
   tablaContainer.innerHTML = html;
 
   $('#tabla-supabase').DataTable({
-    pageLength: 10,
-    lengthChange: false,
-    language: {
-      url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json"
+     pageLength: 10, // valor inicial
+  lengthMenu: [10, 25, 50, 100],
+  lengthChange: true,
+  language: {
+    url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json"
     }
   });
 }
