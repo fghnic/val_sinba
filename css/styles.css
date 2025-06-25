@@ -1,4 +1,4 @@
-/* Paleta de colores institucional CDMX */
+/* 🎨 Paleta de colores institucional CDMX */
 :root {
   --cdmx-guinda: #801335;
   --cdmx-dorado: #bc955c;
@@ -17,20 +17,21 @@ body {
   color: #333;
 }
 
+/* Encabezado principal */
 h1 {
   color: var(--cdmx-guinda);
   font-weight: bold;
   margin-bottom: 1rem;
 }
 
-/* Encabezado principal con línea inferior */
+/* Línea inferior para encabezados */
 .encabezado-cdmx {
   border-bottom: 3px solid var(--cdmx-guinda);
   padding-bottom: 0.5rem;
   margin-bottom: 2rem;
 }
 
-/* Subtítulos con línea lateral dorada */
+/* Secciones destacadas */
 .seccion-cdmx {
   border-left: 5px solid var(--cdmx-dorado);
   padding-left: 0.75rem;
@@ -39,18 +40,19 @@ h1 {
   font-weight: 600;
 }
 
-/* Etiquetas */
+/* Etiquetas y subtítulos */
 .label-dorado {
   color: var(--cdmx-dorado);
   font-weight: bold;
 }
 
-/* Botones */
+/* 🎛️ Botones */
 .btn-primary,
 .btn-outline-secondary {
   background-color: var(--cdmx-gris);
   border-color: var(--cdmx-gris);
   color: white;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
 
 .btn-outline-secondary {
@@ -65,13 +67,34 @@ h1 {
   color: white;
 }
 
-/* Tabla DataTables */
+/* 📁 Input de archivo */
+#csv-file {
+  max-width: 300px;
+}
+
+/* 📊 Tabla con estilo institucional */
 table.dataTable thead th {
   background-color: var(--cdmx-dorado) !important;
   color: white;
   border-bottom: 2px solid var(--cdmx-guinda);
 }
 
+table.dataTable {
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid #dee2e6;
+  border-radius: 0.4rem;
+  overflow: hidden;
+}
+
+/* 🔎 Buscador */
+.dataTables_wrapper .dataTables_filter input {
+  border: 1px solid var(--cdmx-dorado);
+  border-left: 5px solid var(--cdmx-dorado);
+  padding: 5px 10px;
+  border-radius: 0.25rem;
+}
+
+/* 📄 Paginación personalizada CDMX */
 .dataTables_wrapper .dataTables_paginate .paginate_button {
   color: var(--cdmx-gris) !important;
   background-color: white !important;
@@ -79,51 +102,6 @@ table.dataTable thead th {
   border-radius: 0.25rem !important;
   margin: 0 3px !important;
   padding: 0.4rem 0.7rem !important;
-  font-weight: 500 !important;
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-  background-color: var(--cdmx-lima) !important;
-  color: white !important;
-  border-color: var(--cdmx-lima) !important;
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button.current {
-  background-color: var(--cdmx-guinda) !important;
-  color: white !important;
-  border-color: var(--cdmx-guinda) !important;
-  font-weight: bold !important;
-  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.2);
-}
-
-/* Archivo input */
-#csv-file {
-  max-width: 300px;
-}
-
-/* Responsive filtros */
-@media (max-width: 576px) {
-  .d-flex.flex-wrap.gap-3 {
-    flex-direction: column;
-  }
-
-  #csv-form .row {
-    flex-direction: column;
-  }
-
-  #csv-form .col-auto {
-    width: 100%;
-  }
-}
-
-/* Estilo personalizado de paginación CDMX para DataTables */
-.dataTables_wrapper .dataTables_paginate .paginate_button {
-  background-color: white !important;
-  border: 1px solid var(--cdmx-gris) !important;
-  color: var(--cdmx-gris) !important;
-  margin: 0 3px !important;
-  padding: 0.4rem 0.7rem !important;
-  border-radius: 0.25rem !important;
   font-weight: 500 !important;
   transition: all 0.2s ease-in-out;
 }
@@ -140,4 +118,25 @@ table.dataTable thead th {
   color: white !important;
   border-color: var(--cdmx-guinda) !important;
   font-weight: bold !important;
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+/* 🧾 Tabla responsive */
+.table-responsive {
+  margin-top: 1rem;
+}
+
+/* 📱 Responsive filtros y formulario */
+@media (max-width: 576px) {
+  .d-flex.flex-wrap.gap-3 {
+    flex-direction: column;
+  }
+
+  #csv-form .row {
+    flex-direction: column;
+  }
+
+  #csv-form .col-auto {
+    width: 100%;
+  }
 }
