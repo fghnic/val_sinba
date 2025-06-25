@@ -1,4 +1,4 @@
-/* 🎨 Paleta de colores institucional CDMX */
+/* Paleta institucional CDMX */
 :root {
   --cdmx-guinda: #801335;
   --cdmx-dorado: #bc955c;
@@ -11,27 +11,24 @@
   --cdmx-lima: #78be20;
 }
 
+/* Tipografía y fondo general */
 body {
   font-family: "Segoe UI", sans-serif;
   background-color: #f8f9fa;
   color: #333;
 }
 
-/* Encabezado principal */
-h1 {
+/* Título principal con línea guinda inferior */
+.encabezado-cdmx {
   color: var(--cdmx-guinda);
   font-weight: bold;
-  margin-bottom: 1rem;
-}
-
-/* Línea inferior para encabezados */
-.encabezado-cdmx {
   border-bottom: 3px solid var(--cdmx-guinda);
   padding-bottom: 0.5rem;
   margin-bottom: 2rem;
+  text-align: center;
 }
 
-/* Secciones destacadas */
+/* Subtítulo de sección con borde izquierdo dorado */
 .seccion-cdmx {
   border-left: 5px solid var(--cdmx-dorado);
   padding-left: 0.75rem;
@@ -40,19 +37,18 @@ h1 {
   font-weight: 600;
 }
 
-/* Etiquetas y subtítulos */
+/* Etiquetas doradas */
 .label-dorado {
   color: var(--cdmx-dorado);
   font-weight: bold;
 }
 
-/* 🎛️ Botones */
+/* Botones institucionales */
 .btn-primary,
 .btn-outline-secondary {
   background-color: var(--cdmx-gris);
   border-color: var(--cdmx-gris);
   color: white;
-  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
 
 .btn-outline-secondary {
@@ -67,41 +63,22 @@ h1 {
   color: white;
 }
 
-/* 📁 Input de archivo */
-#csv-file {
-  max-width: 300px;
-}
-
-/* 📊 Tabla con estilo institucional */
+/* Tabla DataTables: encabezado y paginación */
 table.dataTable thead th {
   background-color: var(--cdmx-dorado) !important;
   color: white;
   border-bottom: 2px solid var(--cdmx-guinda);
+  font-weight: bold;
 }
 
-table.dataTable {
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-  border: 1px solid #dee2e6;
-  border-radius: 0.4rem;
-  overflow: hidden;
-}
-
-/* 🔎 Buscador */
-.dataTables_wrapper .dataTables_filter input {
-  border: 1px solid var(--cdmx-dorado);
-  border-left: 5px solid var(--cdmx-dorado);
-  padding: 5px 10px;
-  border-radius: 0.25rem;
-}
-
-/* 📄 Paginación personalizada CDMX */
+/* Paginación personalizada */
 .dataTables_wrapper .dataTables_paginate .paginate_button {
-  color: var(--cdmx-gris) !important;
   background-color: white !important;
   border: 1px solid var(--cdmx-gris) !important;
-  border-radius: 0.25rem !important;
+  color: var(--cdmx-gris) !important;
   margin: 0 3px !important;
   padding: 0.4rem 0.7rem !important;
+  border-radius: 0.25rem !important;
   font-weight: 500 !important;
   transition: all 0.2s ease-in-out;
 }
@@ -121,12 +98,32 @@ table.dataTable {
   box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.2);
 }
 
-/* 🧾 Tabla responsive */
-.table-responsive {
-  margin-top: 1rem;
+/* Selector de filas (entries) y búsqueda */
+.dataTables_wrapper .dataTables_length label,
+.dataTables_wrapper .dataTables_filter label {
+  font-weight: 500;
+  color: var(--cdmx-gris);
 }
 
-/* 📱 Responsive filtros y formulario */
+.dataTables_wrapper .dataTables_length select,
+.dataTables_wrapper .dataTables_filter input {
+  border: 1px solid var(--cdmx-gris);
+  border-radius: 0.25rem;
+  padding: 0.3rem 0.6rem;
+}
+
+/* Mensajes de DataTables */
+.dataTables_info {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+/* Input file ancho fijo */
+#csv-file {
+  max-width: 300px;
+}
+
+/* Responsive filtros y formulario */
 @media (max-width: 576px) {
   .d-flex.flex-wrap.gap-3 {
     flex-direction: column;
@@ -139,4 +136,16 @@ table.dataTable {
   #csv-form .col-auto {
     width: 100%;
   }
+
+  .form-select,
+  .form-control {
+    width: 100% !important;
+  }
 }
+
+/* Estilo para alertas con íconos */
+.alert i.bi {
+  font-size: 1.2rem;
+  vertical-align: -0.1rem;
+}
+

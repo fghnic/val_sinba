@@ -19,27 +19,34 @@ async function cargarClues() {
     .select("clues, nombre")
     .order("clues");
 
-  if (error) return console.error("Error CLUES:", error.message);
+  if (error) {
+    console.error("Error CLUES:", error.message);
+    return;
+  }
 
   selectClues.innerHTML = `<option value="">-- Mostrar todos --</option>` +
     data.map(d => `<option value="${d.clues}">${d.clues} - ${d.nombre}</option>`).join("");
 }
 
-// Cargar secciones dinámicamente
+// Cargar secciones dinámicamente (hasta 5000 registros)
 async function cargarSecciones() {
   const { data, error } = await supabase
     .from("tbl_indice")
-    .select("secc")
-    .order("secc");
+    .select("secc", { count: "exact" })
+    .range(0, 4999);
 
-  if (error) return console.error("Error secciones:", error.message);
+  if (error) {
+    console.error("Error secciones:", error.message);
+    return;
+  }
 
-  const únicas = [...new Set(data.map(d => d.secc).filter(Boolean))];
+  const unicas = [...new Set(data.map(d => d.secc).filter(secc => secc && secc.trim() !== ""))];
+
   selectSecc.innerHTML = `<option value="">-- Mostrar todos --</option>` +
-    únicas.map(secc => `<option value="${secc}">${secc}</option>`).join("");
+    unicas.map(secc => `<option value="${secc}">${secc}</option>`).join("");
 }
 
-// Mostrar datos con filtros y hasta 5000 registros
+// Mostrar datos con filtros (hasta 5000 registros)
 async function mostrarTabla() {
   const clues = selectClues.value;
   const secc = selectSecc.value;
@@ -54,10 +61,10 @@ async function mostrarTabla() {
         desc_plat, secc, apartado, origen
       )
     `, { count: "exact" })
-    .range(0, 4999); // Ajusta aquí si esperas más registros
+    .range(0, 4999); // Ajustable
 
   if (clues) query = query.eq("clues", clues);
-  // Sección se filtra después, porque está dentro de la relación
+
   const { data, error } = await query;
 
   if (error) {
@@ -70,7 +77,6 @@ async function mostrarTabla() {
     return;
   }
 
-  // Filtrar sección si aplica
   const filtrados = secc
     ? data.filter(r => r.tbl_indice?.secc === secc)
     : data;
@@ -80,7 +86,6 @@ async function mostrarTabla() {
     return;
   }
 
-  // Construir tabla
   const tablaHTML = `
     <table id="tabla-supabase" class="table table-striped table-bordered">
       <thead>
@@ -110,7 +115,7 @@ async function mostrarTabla() {
 
   tablaContainer.innerHTML = tablaHTML;
 
-  // Activar DataTable con selector de cantidad de filas
+  // Activar DataTables
   setTimeout(() => {
     $('#tabla-supabase').DataTable({
       pageLength: 10,
@@ -131,9 +136,11 @@ btnLimpiar.addEventListener("click", () => {
   mostrarTabla();
 });
 
-// Inicializar
+// Inicialización
 cargarClues();
 cargarSecciones();
 mostrarTabla();
+
+
 
 
