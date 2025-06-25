@@ -7,6 +7,7 @@ const cluesSelectUpload = document.getElementById("clues-select-upload");
 const btnUpload = document.getElementById("btn-upload");
 
 const FILAS_ESPERADAS = 1760;
+const AXO_ESPERADO = 2025;
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -24,13 +25,32 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
+  mostrarAlerta("Verificando datos existentes...", "info");
+
+  // Verificar si ya hay datos para la CLUES
+  const { data: existentes, error: errCheck } = await supabase
+    .from('tbl_generales')
+    .select('id_generales')
+    .eq('clues', clues)
+    .limit(1);
+
+  if (errCheck) {
+    mostrarAlerta(`Error al verificar datos existentes: ${errCheck.message}`, 'danger');
+    return;
+  }
+
+  if (existentes.length > 0) {
+    mostrarAlerta(`Ya existen datos cargados para la CLUES ${clues}. No se permite subir duplicados.`, 'warning');
+    return;
+  }
+
   mostrarAlerta("Procesando archivo CSV...", "info");
 
   Papa.parse(file, {
     header: true,
     skipEmptyLines: true,
     complete: async function (results) {
-      const required = ["clues", "var", "cant"];
+      const required = ["clues", "var", "cant", "mes", "axo"];
       const headers = results.meta.fields;
 
       if (!required.every(h => headers.includes(h))) {
@@ -38,12 +58,34 @@ form.addEventListener("submit", async (e) => {
         return;
       }
 
-      const registros = results.data.filter(row =>
-        required.every(h => row[h] !== undefined && row[h].trim() !== "")
-      );
+      // Validar filas con campos requeridos y validaciones específicas
+      const registros = results.data.filter((row, index) => {
+        // Validar campos no vacíos
+        const camposLlenos = required.every(h => row[h] !== undefined && row[h].toString().trim() !== "");
+        if (!camposLlenos) {
+          mostrarAlerta(`Fila ${index + 2} tiene campos vacíos.`, "danger");
+          return false;
+        }
+
+        // Validar mes
+        const mesNum = Number(row.mes);
+        if (!(mesNum >= 1 && mesNum <= 12)) {
+          mostrarAlerta(`Fila ${index + 2}: mes inválido (${row.mes}). Debe ser entre 1 y 12.`, "danger");
+          return false;
+        }
+
+        // Validar axo exacto
+        const axoNum = Number(row.axo);
+        if (axoNum !== AXO_ESPERADO) {
+          mostrarAlerta(`Fila ${index + 2}: año inválido (${row.axo}). Solo se permite ${AXO_ESPERADO}.`, "danger");
+          return false;
+        }
+
+        return true;
+      });
 
       if (registros.length !== FILAS_ESPERADAS) {
-        mostrarAlerta(`El archivo debe contener exactamente ${FILAS_ESPERADAS} filas. Se encontraron ${registros.length}.`, "danger");
+        mostrarAlerta(`El archivo debe contener exactamente ${FILAS_ESPERADAS} filas válidas. Se encontraron ${registros.length}.`, "danger");
         return;
       }
 
@@ -63,10 +105,12 @@ form.addEventListener("submit", async (e) => {
         mostrarAlerta(`✅ Se cargaron ${registros.length} registros correctamente.`, "success");
         form.reset();
         btnUpload.disabled = true;
-        // Opcional: refrescar tabla si filtros están seleccionados
+
+        // Refrescar tabla si filtros están seleccionados
         const event = new Event('change');
         document.getElementById("clues-select").dispatchEvent(event);
         document.getElementById("secc-select").dispatchEvent(event);
+
       } catch (err) {
         mostrarAlerta("Error inesperado: " + err.message, "danger");
       }
@@ -98,4 +142,5 @@ function mostrarAlerta(mensaje, tipo = "info") {
 cluesSelectUpload.addEventListener("change", () => {
   btnUpload.disabled = !cluesSelectUpload.value;
 });
+
 

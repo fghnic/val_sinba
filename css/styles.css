@@ -1,3 +1,4 @@
+/* Paleta institucional y estilos generales */
 :root {
   --cdmx-guinda: #801335;
   --cdmx-dorado: #bc955c;
@@ -145,3 +146,4 @@ table.dataTable thead th {
   color: var(--cdmx-rosa);
   font-weight: 600;
 }
+
