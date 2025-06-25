@@ -14,7 +14,60 @@ const btnLimpiar = document.getElementById("limpiar-filtros");
 
 let datosOriginales = [];
 
-// Cargar datos completos con relaciones
+// Función para cargar todas las CLUES en el selector
+async function cargarClues() {
+  const { data, error } = await supabase
+    .from("tbl_clues")
+    .select("clues, nombre")
+    .order("clues")
+    .limit(10000); // límite alto para asegurar traer todas
+
+  if (error) {
+    console.error("Error cargando CLUES:", error.message);
+    selectClues.innerHTML = `<option value="">-- Error al cargar CLUES --</option>`;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    selectClues.innerHTML = `<option value="">-- No hay CLUES disponibles --</option>`;
+    return;
+  }
+
+  selectClues.innerHTML =
+    `<option value="">-- Mostrar todos --</option>` +
+    data
+      .map((c) => `<option value="${c.clues}">${c.clues} - ${c.nombre}</option>`)
+      .join("");
+}
+
+// Función para cargar todas las secciones en el selector
+async function cargarSecciones() {
+  const { data, error } = await supabase
+    .from("tbl_indice")
+    .select("secc")
+    .order("secc")
+    .limit(10000);
+
+  if (error) {
+    console.error("Error cargando secciones:", error.message);
+    selectSecc.innerHTML = `<option value="">-- Error al cargar secciones --</option>`;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    selectSecc.innerHTML = `<option value="">-- No hay secciones disponibles --</option>`;
+    return;
+  }
+
+  // Obtener valores únicos y filtrados (no nulos)
+  const seccUnicas = [...new Set(data.map((d) => d.secc).filter(Boolean))];
+
+  selectSecc.innerHTML =
+    `<option value="">-- Mostrar todos --</option>` +
+    seccUnicas.map((s) => `<option value="${s}">${s}</option>`).join("");
+}
+
+// Función para cargar todos los datos para la tabla
 async function cargarDatos() {
   tablaContainer.innerHTML = `<div class="alert alert-info"><i class="bi bi-hourglass-split me-1"></i>Cargando datos...</div>`;
 
@@ -24,7 +77,8 @@ async function cargarDatos() {
       var, cant, clues,
       tbl_clues(clues, nombre),
       tbl_indice(desc_plat, secc, apartado, origen)
-    `).range(0, 9999);//Trae hasta 10 000 registros
+    `)
+    .range(0, 9999); // hasta 10,000 registros
 
   if (error) {
     tablaContainer.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
@@ -33,13 +87,12 @@ async function cargarDatos() {
 
   datosOriginales = data;
   renderTabla(data);
-  cargarFiltros(data);
 }
 
-// Renderizar tabla con DataTables
+// Función para renderizar tabla con DataTables
 function renderTabla(data) {
-  if ($.fn.DataTable.isDataTable('#tabla-supabase')) {
-    $('#tabla-supabase').DataTable().destroy();
+  if ($.fn.DataTable.isDataTable("#tabla-supabase")) {
+    $("#tabla-supabase").DataTable().destroy();
   }
 
   const html = `
@@ -57,54 +110,47 @@ function renderTabla(data) {
         </tr>
       </thead>
       <tbody>
-        ${data.map(r => `
+        ${data
+          .map(
+            (r) => `
           <tr>
-            <td>${r.tbl_clues?.clues || '—'}</td>
-            <td>${r.tbl_clues?.nombre || '—'}</td>
-            <td>${r.var || '—'}</td>
-            <td>${r.tbl_indice?.desc_plat || '—'}</td>
-            <td>${r.cant || '—'}</td>
-            <td>${r.tbl_indice?.secc || '—'}</td>
-            <td>${r.tbl_indice?.apartado || '—'}</td>
-            <td>${r.tbl_indice?.origen || '—'}</td>
-          </tr>
-        `).join("")}
+            <td>${r.tbl_clues?.clues || "—"}</td>
+            <td>${r.tbl_clues?.nombre || "—"}</td>
+            <td>${r.var || "—"}</td>
+            <td>${r.tbl_indice?.desc_plat || "—"}</td>
+            <td>${r.cant || "—"}</td>
+            <td>${r.tbl_indice?.secc || "—"}</td>
+            <td>${r.tbl_indice?.apartado || "—"}</td>
+            <td>${r.tbl_indice?.origen || "—"}</td>
+          </tr>`
+          )
+          .join("")}
       </tbody>
     </table>
   `;
 
   tablaContainer.innerHTML = html;
 
-  $('#tabla-supabase').DataTable({
-     pageLength: 10, // valor inicial
-  lengthMenu: [10, 25, 50, 100],
-  lengthChange: true,
-  language: {
-    url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json"
-    }
+  $("#tabla-supabase").DataTable({
+    pageLength: 10,
+    lengthMenu: [10, 25, 50, 100],
+    lengthChange: true,
+    language: {
+      url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json",
+      lengthMenu: "Mostrar _MENU_ registros por página",
+    },
   });
 }
 
-// Cargar filtros únicos
-function cargarFiltros(data) {
-  const cluesUnicas = [...new Set(data.map(r => r.clues))].filter(Boolean);
-  const seccUnicas = [...new Set(data.map(r => r.tbl_indice?.secc))].filter(Boolean);
-
-  selectClues.innerHTML = `<option value="">-- Mostrar todos --</option>` +
-    cluesUnicas.map(c => `<option value="${c}">${c}</option>`).join("");
-
-  selectSecc.innerHTML = `<option value="">-- Mostrar todos --</option>` +
-    seccUnicas.map(s => `<option value="${s}">${s}</option>`).join("");
-}
-
-// Aplicar filtros seleccionados
+// Función para filtrar datos según selección
 function aplicarFiltros() {
   const filtroClues = selectClues.value;
   const filtroSecc = selectSecc.value;
 
-  const datosFiltrados = datosOriginales.filter(r =>
-    (!filtroClues || r.clues === filtroClues) &&
-    (!filtroSecc || r.tbl_indice?.secc === filtroSecc)
+  const datosFiltrados = datosOriginales.filter(
+    (r) =>
+      (!filtroClues || r.clues === filtroClues) &&
+      (!filtroSecc || r.tbl_indice?.secc === filtroSecc)
   );
 
   renderTabla(datosFiltrados);
@@ -119,5 +165,8 @@ btnLimpiar.addEventListener("click", () => {
   renderTabla(datosOriginales);
 });
 
-// Inicializar
+// Inicializar todo
+cargarClues();
+cargarSecciones();
 cargarDatos();
+

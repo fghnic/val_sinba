@@ -1,5 +1,5 @@
-// subir_csv.js
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+import Papa from "https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js";
 
 const supabase = createClient(
   "https://ucpujkiheaxclghkkyvn.supabase.co",
@@ -12,43 +12,61 @@ const statusDiv = document.getElementById("upload-status");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+
   const file = fileInput.files[0];
   if (!file) {
     mostrarAlerta("Por favor selecciona un archivo CSV válido.", "warning");
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = async (event) => {
-    const text = event.target.result;
-    const rows = text.trim().split("\n").map((row) => row.split(","));
+  mostrarAlerta("Procesando archivo CSV...", "info");
 
-    const headers = rows[0];
-    const required = ["clues", "var", "cant"];
-    if (!required.every((h) => headers.includes(h))) {
-      mostrarAlerta("El archivo no contiene los encabezados requeridos: clues, var, cant", "danger");
-      return;
-    }
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: async function (results) {
+      // Validar encabezados requeridos
+      const required = ["clues", "var", "cant"];
+      const headers = results.meta.fields;
 
-    const registros = rows.slice(1).map((cols) => {
-      const obj = {};
-      headers.forEach((h, i) => {
-        obj[h.trim()] = cols[i]?.trim();
-      });
-      return obj;
-    });
+      if (!required.every((h) => headers.includes(h))) {
+        mostrarAlerta(`El archivo debe contener los encabezados: ${required.join(", ")}`, "danger");
+        return;
+      }
 
-    const { data, error } = await supabase.from("tbl_generales").insert(registros);
+      // Filtrar registros válidos (sin claves vacías)
+      const registros = results.data.filter((row) =>
+        required.every((h) => row[h] !== undefined && row[h].trim() !== "")
+      );
 
-    if (error) {
-      mostrarAlerta("Error al subir los datos: " + error.message, "danger");
-    } else {
-      mostrarAlerta("Datos cargados correctamente.", "success");
-      form.reset();
-    }
-  };
+      if (registros.length === 0) {
+        mostrarAlerta("No se encontraron registros válidos para subir.", "warning");
+        return;
+      }
 
-  reader.readAsText(file);
+      try {
+        const batchSize = 500; // tamaño de lote para inserciones
+        for (let i = 0; i < registros.length; i += batchSize) {
+          const lote = registros.slice(i, i + batchSize);
+
+          const { error } = await supabase.from("tbl_generales").insert(lote);
+
+          if (error) {
+            mostrarAlerta("Error al subir los datos: " + error.message, "danger");
+            return;
+          }
+        }
+
+        mostrarAlerta(`Datos cargados correctamente (${registros.length} registros).`, "success");
+        form.reset();
+      } catch (err) {
+        mostrarAlerta("Error inesperado: " + err.message, "danger");
+      }
+    },
+    error: function (err) {
+      mostrarAlerta("Error leyendo el archivo: " + err.message, "danger");
+    },
+  });
 });
 
 function mostrarAlerta(mensaje, tipo = "info") {
@@ -59,4 +77,3 @@ function mostrarAlerta(mensaje, tipo = "info") {
     </div>
   `;
 }
-
