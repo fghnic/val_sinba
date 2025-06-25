@@ -1,16 +1,29 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+import { supabase } from "./supabase_config.js";
 
-// Supabase config
-const supabase = createClient(
-  "https://ucpujkiheaxclghkkyvn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjcHVqa2loZWF4Y2xnaGtreXZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3MDMzOTEsImV4cCI6MjA2NTI3OTM5MX0.FGb-g6NBz4wVp6Voh1JYSAmbzPYGIJXqT608-LC3FFA"
-);
-
-// Referencias DOM
 const tablaContainer = document.getElementById("tabla-container");
 const selectClues = document.getElementById("clues-select");
 const selectSecc = document.getElementById("secc-select");
 const btnLimpiar = document.getElementById("limpiar-filtros");
+
+const seccionesValidas = [
+  "Biológico",
+  "Biológico IE",
+  "Discapacidad",
+  "Fuera de la Unidad",
+  "Independientes ONCO",
+  "Independientes PAR MUN",
+  "Independientes PSE",
+  "Independientes PSJ",
+  "Independientes SNEI",
+  "Independientes UNEME EC",
+  "Leishmaniasis",
+  "Rabia",
+  "SIC",
+  "Tarjetas",
+  "BIOS",
+  "BIOS_OTRO",
+  "OTHER"
+];
 
 // Cargar CLUES dinámicamente
 async function cargarClues() {
@@ -24,34 +37,33 @@ async function cargarClues() {
     return;
   }
 
-  selectClues.innerHTML = `<option value="">-- Mostrar todos --</option>` +
+  const options = `<option value="">-- Selecciona CLUES --</option>` +
     data.map(d => `<option value="${d.clues}">${d.clues} - ${d.nombre}</option>`).join("");
+
+  selectClues.innerHTML = options;
+
+  // También llenar select para subir CSV
+  const cluesUpload = document.getElementById("clues-select-upload");
+  if (cluesUpload) cluesUpload.innerHTML = options;
 }
 
-// Cargar secciones dinámicamente (hasta 5000 registros)
-async function cargarSecciones() {
-  const { data, error } = await supabase
-    .from("tbl_indice")
-    .select("secc", { count: "exact" })
-    .range(0, 4999);
-
-  if (error) {
-    console.error("Error secciones:", error.message);
-    return;
-  }
-
-  const unicas = [...new Set(data.map(d => d.secc).filter(secc => secc && secc.trim() !== ""))];
-
-  selectSecc.innerHTML = `<option value="">-- Mostrar todos --</option>` +
-    unicas.map(secc => `<option value="${secc}">${secc}</option>`).join("");
+// Cargar secciones fijas
+function cargarSecciones() {
+  selectSecc.innerHTML = `<option value="">-- Selecciona Sección --</option>` +
+    seccionesValidas.map(secc => `<option value="${secc}">${secc}</option>`).join("");
 }
 
-// Mostrar datos con filtros (hasta 5000 registros)
+// Mostrar tabla solo si se seleccionan ambos filtros
 async function mostrarTabla() {
   const clues = selectClues.value;
   const secc = selectSecc.value;
 
-  tablaContainer.innerHTML = `<div class="alert alert-info">Cargando datos...</div>`;
+  if (!clues || !secc) {
+    tablaContainer.innerHTML = `<div class="alert alert-info"><i class="bi bi-info-circle me-1"></i> Por favor, selecciona un CLUES y una Sección para mostrar datos.</div>`;
+    return;
+  }
+
+  tablaContainer.innerHTML = `<div class="alert alert-info"><i class="bi bi-hourglass-split me-1"></i> Cargando datos...</div>`;
 
   let query = supabase
     .from("tbl_generales")
@@ -61,9 +73,8 @@ async function mostrarTabla() {
         desc_plat, secc, apartado, origen
       )
     `, { count: "exact" })
-    .range(0, 4999); // Ajustable
-
-  if (clues) query = query.eq("clues", clues);
+    .eq("clues", clues)
+    .range(0, 4999);
 
   const { data, error } = await query;
 
@@ -77,9 +88,8 @@ async function mostrarTabla() {
     return;
   }
 
-  const filtrados = secc
-    ? data.filter(r => r.tbl_indice?.secc === secc)
-    : data;
+  // Filtrar por sección en cliente
+  const filtrados = data.filter(r => r.tbl_indice?.secc === secc);
 
   if (!filtrados.length) {
     tablaContainer.innerHTML = `<div class="alert alert-warning">No se encontraron registros para esta sección.</div>`;
@@ -115,8 +125,10 @@ async function mostrarTabla() {
 
   tablaContainer.innerHTML = tablaHTML;
 
-  // Activar DataTables
   setTimeout(() => {
+    if ($.fn.DataTable.isDataTable('#tabla-supabase')) {
+      $('#tabla-supabase').DataTable().destroy();
+    }
     $('#tabla-supabase').DataTable({
       pageLength: 10,
       lengthMenu: [10, 25, 50, 100],
@@ -140,6 +152,7 @@ btnLimpiar.addEventListener("click", () => {
 cargarClues();
 cargarSecciones();
 mostrarTabla();
+
 
 
 
