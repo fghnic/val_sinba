@@ -27,7 +27,6 @@ form.addEventListener("submit", async (e) => {
 
   mostrarAlerta("Verificando datos existentes...", "info");
 
-  // Verificar si ya hay datos para la CLUES
   const { data: existentes, error: errCheck } = await supabase
     .from('tbl_generales')
     .select('id_generales')
@@ -58,14 +57,12 @@ form.addEventListener("submit", async (e) => {
         return;
       }
 
-      // Validar que todos los registros tengan el mismo clues que el seleccionado
       const csvCluesSet = new Set(results.data.map(row => (row.clues || "").toUpperCase().trim()));
       if (csvCluesSet.size !== 1 || !csvCluesSet.has(clues.toUpperCase())) {
         mostrarAlerta(`El archivo CSV contiene datos de CLUES diferente a "${clues}". Por favor verifica.`, "danger");
         return;
       }
 
-      // Validar filas con campos requeridos y validaciones específicas
       const registros = results.data.filter((row, index) => {
         const camposLlenos = required.every(h => row[h] !== undefined && row[h].toString().trim() !== "");
         if (!camposLlenos) {
@@ -119,7 +116,7 @@ form.addEventListener("submit", async (e) => {
 
           const origenSelect = document.getElementById("origen-select");
           if (origenSelect) origenSelect.dispatchEvent(event);
-        }, 1500);
+        }, 2500);
 
       } catch (err) {
         mostrarAlerta("Error inesperado: " + err.message, "danger");
@@ -153,3 +150,4 @@ function mostrarAlerta(mensaje, tipo = "info") {
 cluesSelectUpload.addEventListener("change", () => {
   btnUpload.disabled = !cluesSelectUpload.value;
 });
+
