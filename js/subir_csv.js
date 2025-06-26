@@ -76,79 +76,7 @@ form.addEventListener("submit", async (e) => {
 
         // Validar mes
         const mesNum = Number(row.mes);
-        if (!(mesNum >= 1 && mesNum <= 12)) {
-          mostrarAlerta(`Fila ${index + 2}: mes inválido (${row.mes}). Debe ser entre 1 y 12.`, "danger");
-          return false;
-        }
 
-        // Validar axo exacto
-        const axoNum = Number(row.axo);
-        if (axoNum !== AXO_ESPERADO) {
-          mostrarAlerta(`Fila ${index + 2}: año inválido (${row.axo}). Solo se permite ${AXO_ESPERADO}.`, "danger");
-          return false;
-        }
-
-        return true;
-      });
-
-      if (registros.length !== FILAS_ESPERADAS) {
-        mostrarAlerta(`El archivo debe contener exactamente ${FILAS_ESPERADAS} filas válidas. Se encontraron ${registros.length}.`, "danger");
-        return;
-      }
-
-      try {
-        const batchSize = 500;
-
-        for (let i = 0; i < registros.length; i += batchSize) {
-          const lote = registros.slice(i, i + batchSize);
-          const { error } = await supabase.from("tbl_generales").upsert(lote);
-
-          if (error) {
-            mostrarAlerta(`Error al subir datos: ${error.message}`, "danger");
-            return;
-          }
-        }
-
-        mostrarAlerta(`✅ Se cargaron ${registros.length} registros correctamente.`, "success");
-        form.reset();
-        btnUpload.disabled = true;
-
-        // Refrescar tabla si filtros están seleccionados
-        const event = new Event('change');
-        document.getElementById("clues-select").dispatchEvent(event);
-        document.getElementById("secc-select").dispatchEvent(event);
-
-      } catch (err) {
-        mostrarAlerta("Error inesperado: " + err.message, "danger");
-      }
-    },
-    error: function (err) {
-      mostrarAlerta("Error leyendo el archivo: " + err.message, "danger");
-    }
-  });
-});
-
-function mostrarAlerta(mensaje, tipo = "info") {
-  const iconos = {
-    info: "bi-info-circle-fill",
-    success: "bi-check-circle-fill",
-    warning: "bi-exclamation-triangle-fill",
-    danger: "bi-x-circle-fill"
-  };
-  const icono = iconos[tipo] || iconos.info;
-
-  statusDiv.innerHTML = `
-    <div class="alert alert-${tipo} alert-dismissible fade show mt-2" role="alert">
-      <i class="bi ${icono} me-2"></i> ${mensaje}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-    </div>
-  `;
-}
-
-// Habilitar botón subir solo si se selecciona CLUES
-cluesSelectUpload.addEventListener("change", () => {
-  btnUpload.disabled = !cluesSelectUpload.value;
-});
 
 
 
