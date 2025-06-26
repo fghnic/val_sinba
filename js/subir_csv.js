@@ -60,9 +60,6 @@ form.addEventListener("submit", async (e) => {
 
       // Validar que todos los registros tengan el mismo clues que el seleccionado
       const csvCluesSet = new Set(results.data.map(row => (row.clues || "").toUpperCase().trim()));
-      console.log("CLUES en CSV:", [...csvCluesSet]);
-      console.log("CLUES seleccionado:", clues.toUpperCase());
-
       if (csvCluesSet.size !== 1 || !csvCluesSet.has(clues.toUpperCase())) {
         mostrarAlerta(`El archivo CSV contiene datos de CLUES diferente a "${clues}". Por favor verifica.`, "danger");
         return;
@@ -94,8 +91,6 @@ form.addEventListener("submit", async (e) => {
         return true;
       });
 
-      console.log(`Filas válidas: ${registros.length}`);
-
       if (registros.length !== FILAS_ESPERADAS) {
         mostrarAlerta(`El archivo debe contener exactamente ${FILAS_ESPERADAS} filas válidas. Se encontraron ${registros.length}.`, "danger");
         return;
@@ -103,34 +98,25 @@ form.addEventListener("submit", async (e) => {
 
       try {
         const batchSize = 500;
-        let totalInsertados = 0;
 
         for (let i = 0; i < registros.length; i += batchSize) {
           const lote = registros.slice(i, i + batchSize);
-          const { data, error } = await supabase.from("tbl_generales").upsert(lote);
+          const { error } = await supabase.from("tbl_generales").upsert(lote);
 
           if (error) {
             mostrarAlerta(`Error al subir datos: ${error.message}`, "danger");
             return;
           }
-
-          if (data && data.length) {
-            totalInsertados += data.length;
-          }
         }
 
-        if (totalInsertados === registros.length) {
-          mostrarAlerta(`✅ Se cargaron ${totalInsertados} registros correctamente.`, "success");
-          form.reset();
-          btnUpload.disabled = true;
+        mostrarAlerta(`✅ Se cargaron ${registros.length} registros correctamente.`, "success");
+        form.reset();
+        btnUpload.disabled = true;
 
-          // Refrescar tabla si filtros están seleccionados
-          const event = new Event('change');
-          document.getElementById("clues-select").dispatchEvent(event);
-          document.getElementById("secc-select").dispatchEvent(event);
-        } else {
-          mostrarAlerta(`Error: No se insertaron todos los registros. Insertados: ${totalInsertados}`, "danger");
-        }
+        // Refrescar tabla si filtros están seleccionados
+        const event = new Event('change');
+        document.getElementById("clues-select").dispatchEvent(event);
+        document.getElementById("secc-select").dispatchEvent(event);
 
       } catch (err) {
         mostrarAlerta("Error inesperado: " + err.message, "danger");
@@ -163,6 +149,7 @@ function mostrarAlerta(mensaje, tipo = "info") {
 cluesSelectUpload.addEventListener("change", () => {
   btnUpload.disabled = !cluesSelectUpload.value;
 });
+
 
 
 
