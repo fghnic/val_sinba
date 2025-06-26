@@ -147,3 +147,7 @@ table.dataTable thead th {
   font-weight: 600;
 }
 
+footer a.text-white:hover {
+  color: #bc955c; /* color dorado institucional */
+  text-decoration: none;
+}
