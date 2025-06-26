@@ -2,28 +2,8 @@ import { supabase } from "./supabase_config.js";
 
 const tablaContainer = document.getElementById("tabla-container");
 const selectClues = document.getElementById("clues-select");
-const selectSecc = document.getElementById("secc-select");
+const selectOrigen = document.getElementById("origen-select");
 const btnLimpiar = document.getElementById("limpiar-filtros");
-
-const seccionesValidas = [
-  "Biológico",
-  "Biológico IE",
-  "Discapacidad",
-  "Fuera de la Unidad",
-  "Independientes ONCO",
-  "Independientes PAR MUN",
-  "Independientes PSE",
-  "Independientes PSJ",
-  "Independientes SNEI",
-  "Independientes UNEME EC",
-  "Leishmaniasis",
-  "Rabia",
-  "SIC",
-  "Tarjetas",
-  "BIOS",
-  "BIOS_OTRO",
-  "OTHER"
-];
 
 // Cargar CLUES dinámicamente
 async function cargarClues() {
@@ -47,19 +27,32 @@ async function cargarClues() {
   if (cluesUpload) cluesUpload.innerHTML = options;
 }
 
-// Cargar secciones fijas
-function cargarSecciones() {
-  selectSecc.innerHTML = `<option value="">-- Selecciona Sección --</option>` +
-    seccionesValidas.map(secc => `<option value="${secc}">${secc}</option>`).join("");
+// Cargar orígenes únicos desde tbl_indice
+async function cargarOrigenes() {
+  const { data, error } = await supabase
+    .from("tbl_indice")
+    .select("origen", { count: "exact" })
+    .range(0, 4999);
+
+  if (error) {
+    console.error("Error orígenes:", error.message);
+    return;
+  }
+
+  // Extraer orígenes únicos y no vacíos
+  const unicos = [...new Set(data.map(d => d.origen).filter(o => o && o.trim() !== ""))];
+
+  selectOrigen.innerHTML = `<option value="">-- Selecciona Origen --</option>` +
+    unicos.map(o => `<option value="${o}">${o}</option>`).join("");
 }
 
-// Mostrar tabla solo si se seleccionan ambos filtros
+// Mostrar tabla filtrando por clues y origen
 async function mostrarTabla() {
   const clues = selectClues.value;
-  const secc = selectSecc.value;
+  const origen = selectOrigen.value;
 
-  if (!clues || !secc) {
-    tablaContainer.innerHTML = `<div class="alert alert-info"><i class="bi bi-info-circle me-1"></i> Por favor, selecciona un CLUES y una Sección para mostrar datos.</div>`;
+  if (!clues || !origen) {
+    tablaContainer.innerHTML = `<div class="alert alert-info"><i class="bi bi-info-circle me-1"></i> Por favor, selecciona un CLUES y un Origen para mostrar datos.</div>`;
     return;
   }
 
@@ -88,11 +81,11 @@ async function mostrarTabla() {
     return;
   }
 
-  // Filtrar por sección en cliente
-  const filtrados = data.filter(r => r.tbl_indice?.secc === secc);
+  // Filtrar por origen en cliente
+  const filtrados = data.filter(r => r.tbl_indice?.origen === origen);
 
   if (!filtrados.length) {
-    tablaContainer.innerHTML = `<div class="alert alert-warning">No se encontraron registros para esta sección.</div>`;
+    tablaContainer.innerHTML = `<div class="alert alert-warning">No se encontraron registros para este origen.</div>`;
     return;
   }
 
@@ -141,17 +134,18 @@ async function mostrarTabla() {
 
 // Eventos
 selectClues.addEventListener("change", mostrarTabla);
-selectSecc.addEventListener("change", mostrarTabla);
+selectOrigen.addEventListener("change", mostrarTabla);
 btnLimpiar.addEventListener("click", () => {
   selectClues.value = "";
-  selectSecc.value = "";
+  selectOrigen.value = "";
   mostrarTabla();
 });
 
 // Inicialización
 cargarClues();
-cargarSecciones();
+cargarOrigenes();
 mostrarTabla();
+
 
 
 
