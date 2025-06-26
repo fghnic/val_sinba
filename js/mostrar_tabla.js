@@ -197,13 +197,8 @@ function agregarEventosBotones() {
         return;
       }
 
-      // Actualización exitosa, actualizar UI
-      $cantText.text(nuevoCant);
-      $cantText.removeClass('d-none');
-      $cantInput.addClass('d-none');
-      $btnEditar.removeClass('d-none');
-      $btnGuardar.addClass('d-none').prop('disabled', false);
-      $btnCancelar.addClass('d-none').prop('disabled', false);
+      // Actualización exitosa, recargar tabla para reflejar cambios
+      mostrarTabla();
     }
   });
 }
@@ -221,6 +216,7 @@ btnLimpiar.addEventListener("click", () => {
 cargarClues();
 cargarOrigenes();
 mostrarTabla();
+
 
 
 
